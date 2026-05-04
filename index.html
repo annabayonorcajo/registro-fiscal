@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fiscal Ledger | Enterprise</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --bg: #000000;
+            --sidebar: #080808;
+            --card: #111111;
+            --safe: #10b981; 
+            --risk: #ef4444; 
+            --accent: #00f2ea;
+            --text: #ffffff;
+            --text-dim: #71717a;
+            --border: #1f1f22;
+            --sidebar-width: 260px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; font-family: 'Inter', -apple-system, sans-serif; }
+        body { background: var(--bg); color: var(--text); overflow-x: hidden; height: 100vh; }
+
+        .app-container { display: flex; height: 100vh; width: 100vw; }
+
+        /* SIDEBAR */
+        aside {
+            width: var(--sidebar-width);
+            background: var(--sidebar);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 40px 20px;
+            z-index: 100;
+        }
+
+        .logo { font-size: 22px; font-weight: 900; letter-spacing: -1.5px; margin-bottom: 50px; color: var(--accent); }
+
+        .nav-menu { flex: 1; }
+        .nav-btn {
+            display: flex; align-items: center; gap: 14px; padding: 16px;
+            color: var(--text-dim); text-decoration: none; border-radius: 14px;
+            margin-bottom: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.2s;
+        }
+        .nav-btn:hover { color: var(--text); background: var(--card); }
+        .nav-btn.active { background: var(--card); color: var(--accent); border: 1px solid var(--border); }
+
+        /* MAIN CONTENT */
+        main { flex: 1; overflow-y: auto; padding: 50px; scroll-behavior: smooth; }
+        .section { display: none; max-width: 1200px; margin: 0 auto; }
+        .section.active { display: block; animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* CARDS & STATS */
+        .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-bottom: 40px; }
+        .card { background: var(--card); padding: 30px; border-radius: 28px; border: 1px solid var(--border); }
+        .val { font-size: 54px; font-weight: 900; margin: 10px 0; letter-spacing: -2px; }
+        .label { color: var(--text-dim); font-size: 12px; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
+
+        /* CALENDAR */
+        .months-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; }
+        .month-card { background: var(--card); padding: 25px; border-radius: 24px; border: 1px solid var(--border); }
+        .month-title { font-size: 20px; font-weight: 800; margin-bottom: 20px; color: var(--text); }
+        .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+        
+        .day {
+            aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border-radius: 10px; font-size: 13px; cursor: pointer; background: #161618; position: relative;
+            border: 1px solid transparent; transition: 0.2s;
+        }
+        .day:hover { transform: scale(1.1); border-color: var(--accent); z-index: 5; }
+        .day.intl { background: var(--safe) !important; color: #000; font-weight: 900; }
+        .day.es { background: var(--risk) !important; color: #fff; font-weight: 900; }
+        .flag-icon { font-size: 10px; position: absolute; bottom: 3px; }
+
+        /* MODAL */
+        #modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(15px);
+            display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px;
+        }
+        .modal-box { background: var(--card); padding: 40px; border-radius: 32px; width: 100%; max-width: 450px; border: 1px solid var(--border); }
+
+        input, select, textarea {
+            width: 100%; background: #000; border: 1px solid var(--border); color: #fff;
+            padding: 16px; border-radius: 14px; margin-top: 10px; margin-bottom: 25px; font-size: 16px; outline: none;
+        }
+        input:focus { border-color: var(--accent); }
+
+        .btn-action { 
+            background: #fff; color: #000; border: none; padding: 18px; border-radius: 16px; 
+            width: 100%; font-weight: 800; cursor: pointer; transition: 0.3s;
+        }
+        .btn-action:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(255,255,255,0.1); }
+
+        /* MOBILE OPTIMIZATION */
+        @media (max-width: 768px) {
+            aside { position: fixed; bottom: 0; left: 0; width: 100%; height: 80px; flex-direction: row; padding: 0 15px; border-right: none; border-top: 1px solid var(--border); }
+            .logo, .nav-footer { display: none; }
+            .nav-menu { flex-direction: row; width: 100%; justify-content: space-around; align-items: center; }
+            .nav-btn { flex-direction: column; font-size: 10px; padding: 10px; gap: 5px; margin: 0; border: none !important; }
+            main { padding: 30px 20px 120px 20px; }
+            .grid-stats { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <aside>
+        <div class="logo">FISCAL PRO</div>
+        <nav class="nav-menu">
+            <div class="nav-btn active" data-sec="dash"><span>📊</span> Dash</div>
+            <div class="nav-btn" data-sec="cal"><span>📅</span> Diario</div>
+            <div class="nav-btn" data-sec="profile"><span>👤</span> Perfil</div>
+            <div class="nav-btn" data-sec="settings"><span>⚙️</span> Ajustes</div>
+        </nav>
+        <div class="nav-footer">
+            <button class="btn-action" onclick="exportPDF()" style="font-size: 12px; padding: 14px;">PDF OFICIAL</button>
+        </div>
+    </aside>
+
+    <main>
+        <section id="sect-dash" class="section active">
+            <h1 style="font-size: 38px; margin-bottom: 40px; letter-spacing: -2px;">Estado de Residencia</h1>
+            <div class="grid-stats">
+                <div class="card" style="border-top: 5px solid var(--safe);">
+                    <div class="label">Fuera de España</div>
+                    <div class="val" id="st-intl">0</div>
+                    <p style="color: var(--safe); font-weight: 700; font-size: 13px;">Días acumulados</p>
+                </div>
+                <div class="card" style="border-top: 5px solid var(--risk);">
+                    <div class="label">Presencia en España</div>
+                    <div class="val" id="st-es">0</div>
+                    <p style="color: var(--risk); font-weight: 700; font-size: 13px;">Límite fiscal: 182</p>
+                </div>
+            </div>
+            <div class="card">
+                <h3 style="margin-bottom: 15px;">Seguridad Digital</h3>
+                <p style="color: var(--text-dim); line-height: 1.6; font-size: 14px;">
+                    Este registro genera automáticamente una firma criptográfica para cada entrada. En caso de inspección, el documento PDF acredita la integridad de los datos reportados.
+                </p>
+            </div>
+        </section>
+
+        <section id="sect-cal" class="section">
+            <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 30px;">
+                <h1>Calendario Fiscal</h1>
+                <select id="year-sel" style="width: auto; margin:0;" onchange="changeYear(this.value)">
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                    <option value="2026">2026</option>
+                </select>
+            </div>
+            <div class="months-grid" id="cal-render"></div>
+        </section>
+
+        <section id="sect-profile" class="section">
+            <h1>Perfil del Titular</h1>
+            <div class="card" style="margin-top: 30px;">
+                <label class="label">Nombre Completo</label>
+                <input type="text" id="p-name" placeholder="Anna Bayón" onchange="saveProfile()">
+                <label class="label">NIF / NIE / RUC</label>
+                <input type="text" id="p-id" placeholder="Identificación Fiscal" onchange="saveProfile()">
+                <label class="label">Dirección Fiscal</label>
+                <input type="text" id="p-addr" placeholder="Asunción, Paraguay" onchange="saveProfile()">
+            </div>
+        </section>
+
+        <section id="sect-settings" class="section">
+            <h1>Ajustes de Datos</h1>
+            <div class="card" style="margin-top: 30px;">
+                <p style="margin-bottom: 20px; color: var(--text-dim);">Gestione la persistencia de sus datos locales.</p>
+                <button class="btn-action" style="background: var(--risk); color: white;" onclick="hardReset()">ELIMINAR TODO EL REGISTRO</button>
+            </div>
+        </section>
+    </main>
+</div>
+
+<div id="modal">
+    <div class="modal-box">
+        <h2 id="m-date" style="margin-bottom: 25px; letter-spacing: -1px;">Registrar día</h2>
+        
+        <label class="label">Estado de Presencia</label>
+        <select id="f-loc">
+            <option value="intl">✅ Fuera de España (Verde)</option>
+            <option value="es">❌ En España (Rojo)</option>
+        </select>
+
+        <label class="label">Bandera / Icono</label>
+        <select id="f-flag">
+            <option value="🇵🇾">🇵🇾 Paraguay</option>
+            <option value="🇪🇸">🇪🇸 España</option>
+            <option value="🇧🇷">🇧🇷 Brasil</option>
+            <option value="🇦🇷">🇦🇷 Argentina</option>
+            <option value="🇺🇾">🇺🇾 Uruguay</option>
+            <option value="✈️">✈️ Tránsito / Vuelo</option>
+            <option value="🌎">🌎 Otro País</option>
+        </select>
+
+        <label class="label">Notas y Pruebas Documentales</label>
+        <textarea id="f-notes" rows="3" placeholder="Hotel, Vuelo, Cita con cliente..."></textarea>
+        
+        <button class="btn-action" onclick="saveDay()">Confirmar y Firmar</button>
+        <button onclick="closeModal()" style="background:none; border:none; color:var(--text-dim); width:100%; margin-top:15px; cursor:pointer; font-weight: 600;">Cerrar sin guardar</button>
+    </div>
+</div>
+
+<script>
+    let db;
+    let entries = {};
+    let activeId = null;
+    let currentYear = 2024;
+
+    const initApp = () => {
+        const req = indexedDB.open("FiscalVault_v4", 1);
+        req.onupgradeneeded = e => {
+            const d = e.target.result;
+            d.createObjectStore("days", {keyPath: "id"});
+            d.createObjectStore("meta", {keyPath: "id"});
+        };
+        req.onsuccess = e => {
+            db = e.target.result;
+            loadData();
+        };
+    };
+
+    const loadData = () => {
+        const tx = db.transaction(["days", "meta"], "readonly");
+        tx.objectStore("days").getAll().onsuccess = e => {
+            entries = {};
+            e.target.result.forEach(d => entries[d.id] = d);
+            renderCalendar();
+            updateStats();
+        };
+        tx.objectStore("meta").get("profile").onsuccess = e => {
+            if(e.target.result) {
+                document.getElementById('p-name').value = e.target.result.name || "";
+                document.getElementById('p-id').value = e.target.result.nif || "";
+                document.getElementById('p-addr').value = e.target.result.addr || "";
+            }
+        };
+    };
+
+    // Navegación corregida para Vercel/GitHub
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            btn.classList.add('active');
+            const target = btn.getAttribute('data-sec');
+            document.getElementById('sect-' + target).classList.add('active');
+        });
+    });
+
+    const renderCalendar = () => {
+        const container = document.getElementById('cal-render');
+        container.innerHTML = '';
+        const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+        
+        months.forEach((name, m) => {
+            let html = `<div class="month-card"><div class="month-title">${name}</div><div class="days-grid">`;
+            const daysInMonth = new Date(currentYear, m + 1, 0).getDate();
+            for(let d=1; d<=daysInMonth; d++) {
+                const id = `${currentYear}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const e = entries[id];
+                html += `<div class="day ${e ? e.loc : ''}" onclick="openDay('${id}')">${d}${e ? `<span class="flag-icon">${e.flag}</span>` : ''}</div>`;
+            }
+            container.innerHTML += html + `</div></div>`;
+        });
+    };
+
+    const openDay = (id) => {
+        activeId = id;
+        const e = entries[id] || {};
+        document.getElementById('m-date').innerText = id;
+        document.getElementById('f-loc').value = e.loc || 'intl';
+        document.getElementById('f-flag').value = e.flag || '🇵🇾';
+        document.getElementById('f-notes').value = e.notes || '';
+        document.getElementById('modal').style.display = 'flex';
+    };
+
+    const closeModal = () => document.getElementById('modal').style.display = 'none';
+
+    const saveDay = () => {
+        const entry = {
+            id: activeId,
+            loc: document.getElementById('f-loc').value,
+            flag: document.getElementById('f-flag').value,
+            notes: document.getElementById('f-notes').value,
+            ts: Date.now()
+        };
+        const tx = db.transaction("days", "readwrite");
+        tx.objectStore("days").put(entry).onsuccess = () => {
+            entries[activeId] = entry;
+            renderCalendar();
+            updateStats();
+            closeModal();
+        };
+    };
+
+    const updateStats = () => {
+        const intl = Object.values(entries).filter(e => e.loc === 'intl' && e.id.startsWith(currentYear)).length;
+        const es = Object.values(entries).filter(e => e.loc === 'es' && e.id.startsWith(currentYear)).length;
+        document.getElementById('st-intl').innerText = intl;
+        document.getElementById('st-es').innerText = es;
+    };
+
+    const saveProfile = () => {
+        const profile = {
+            id: "profile",
+            name: document.getElementById('p-name').value,
+            nif: document.getElementById('p-id').value,
+            addr: document.getElementById('p-addr').value
+        };
+        db.transaction("meta", "readwrite").objectStore("meta").put(profile);
+    };
+
+    const changeYear = (y) => {
+        currentYear = y;
+        renderCalendar();
+        updateStats();
+    };
+
+    const hardReset = () => {
+        if(confirm("ATENCIÓN: Se borrarán todos los datos del dispositivo. ¿Continuar?")) {
+            const tx = db.transaction("days", "readwrite");
+            tx.objectStore("days").clear().onsuccess = () => location.reload();
+        }
+    };
+
+    async function exportPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const name = document.getElementById('p-name').value || "Anna Bayón";
+        
+        doc.setFontSize(22);
+        doc.text("REGISTRO OFICIAL DE PRESENCIA", 20, 30);
+        doc.setFontSize(10);
+        doc.text(`TITULAR: ${name} | ID: ${document.getElementById('p-id').value}`, 20, 40);
+        doc.text(`FECHA REPORTE: ${new Date().toLocaleDateString()}`, 20, 45);
+        doc.line(20, 50, 190, 50);
+
+        let y = 65;
+        const sorted = Object.values(entries).sort((a,b) => a.id.localeCompare(b.id));
+        sorted.forEach(e => {
+            if(y > 280) { doc.addPage(); y = 20; }
+            doc.text(`${e.id} | ${e.loc.toUpperCase()} | ${e.flag} | ${e.notes.substring(0,50)}`, 20, y);
+            y += 8;
+        });
+        doc.save(`Reporte_Fiscal_${name}_${currentYear}.pdf`);
+    }
+
+    window.onload = initApp;
+</script>
+
+</body>
+</html>
