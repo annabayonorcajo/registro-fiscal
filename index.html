@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ABO Fiscal Ledger | Cloud SaaS</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@14.0.1"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <style>
+        /* TEMAS DE COLOR */
+        :root {
+            --bg: #000000; --sidebar: #0a0a0a; --card: #121212; --accent: #00f2ea;
+            --safe: #10b981; --risk: #ef4444; --text: #ffffff; --text-dim: #71717a; --border: #222222;
+        }
+        body.theme-light { --bg: #f4f4f5; --sidebar: #ffffff; --card: #ffffff; --accent: #2563eb; --safe: #059669; --risk: #e11d48; --text: #18181b; --text-dim: #52525b; --border: #e4e4e7; }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', -apple-system, sans-serif; }
+        body { background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; transition: 0.3s; }
+
+        /* PANTALLA DE LOGIN Y ONBOARDING */
+        #auth-screen { position: fixed; inset: 0; background: var(--bg); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
+        .auth-card { background: var(--card); padding: 40px; border-radius: 24px; border: 1px solid var(--border); width: 100%; max-width: 450px; text-align: center; }
+        
+        /* Pestañas de Login/Registro */
+        .auth-tabs { display: flex; background: rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 25px; padding: 5px; }
+        .auth-tab { flex: 1; padding: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--text-dim); border-radius: 8px; transition: 0.2s; }
+        .auth-tab.active { background: var(--card); color: var(--text); box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+
+        .auth-form { display: none; text-align: left; animation: fade 0.3s; }
+        .auth-form.active { display: block; }
+        .auth-error { color: var(--risk); font-size: 13px; margin-top: 15px; display: none; background: rgba(239, 68, 68, 0.1); padding: 10px; border-radius: 8px; }
+
+        /* NAVEGACIÓN Y LAYOUT PRINCIPAL */
+        #app-layout { display: none; width: 100%; height: 100vh; }
+        aside { width: 260px; background: var(--sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 30px 20px; flex-shrink: 0; }
+        .logo { font-size: 24px; font-weight: 900; margin-bottom: 30px; color: var(--accent); letter-spacing: -1px; }
+        .nav-menu { flex: 1; overflow-y: auto; }
+        .nav-btn { display: flex; align-items: center; gap: 12px; padding: 14px; color: var(--text-dim); border-radius: 12px; margin-bottom: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid transparent; width: 100%; background: none; text-align: left; }
+        .nav-btn.active { background: var(--card); color: var(--accent); border-color: var(--border); }
+
+        /* CONTENIDO */
+        main { flex: 1; overflow-y: auto; padding: 40px; scroll-behavior: smooth; }
+        .section { display: none; max-width: 1100px; margin: 0 auto; animation: fade 0.3s; }
+        .section.active { display: block; }
+        @keyframes fade { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* CARDS & UI */
+        .card { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
+        .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .val { font-size: 42px; font-weight: 900; margin: 5px 0; }
+        .label { color: var(--text-dim); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; display: block; margin-bottom: 6px; }
+        
+        .months-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .month-card { background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid var(--border); }
+        .days-header { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; margin-bottom: 10px; font-size: 11px; color: var(--accent); font-weight: 800; }
+        .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 12px; cursor: pointer; background: rgba(150,150,150,0.1); border: 1px solid transparent; position: relative; }
+        .day:empty { background: transparent; cursor: default; border: none; }
+        .day.intl { background: var(--safe) !important; color: #000 !important; font-weight: bold; }
+        .day.es { background: var(--risk) !important; color: #fff !important; font-weight: bold; }
+        
+        input, select, textarea { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: var(--text); padding: 14px; border-radius: 10px; margin-bottom: 15px; font-size: 14px; outline: none; }
+        input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+        .btn { background: var(--text); color: var(--bg); border: none; padding: 15px; border-radius: 12px; width: 100%; font-weight: 800; cursor: pointer; transition: 0.2s; }
+        .btn:hover { opacity: 0.8; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+        .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+        @media (max-width: 768px) {
+            #app-layout { flex-direction: column; }
+            aside { position: fixed; bottom: 0; width: 100%; height: 75px; flex-direction: row; padding: 0 5px; z-index: 100; border-top: 1px solid var(--border); }
+            .logo { display: none; }
+            .nav-menu { display: flex; width: 100%; justify-content: space-around; align-items: center; }
+            .nav-btn { flex-direction: column; font-size: 9px; padding: 5px; margin: 0; }
+            main { padding: 20px 10px 90px 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="auth-screen">
+    <div class="auth-card">
+        <h1 style="color: var(--accent); margin-bottom: 5px; font-size:32px; letter-spacing:-1px;">ABO Fiscal</h1>
+        <p style="color: var(--text-dim); font-size: 13px; margin-bottom: 25px;">Bóveda de Evidencias en la Nube</p>
+
+        <div class="auth-tabs">
+            <div class="auth-tab active" onclick="switchAuthTab('login')">Iniciar Sesión</div>
+            <div class="auth-tab" onclick="switchAuthTab('register')">Registrarse</div>
+        </div>
+        
+        <div id="form-login" class="auth-form active">
+            <label class="label">Correo electrónico</label>
+            <input type="email" id="login-email" placeholder="tu@email.com">
+            <label class="label">Contraseña</label>
+            <input type="password" id="login-pass" placeholder="••••••••">
+            <button class="btn" style="margin-top: 10px;" onclick="login()">Acceder a mi Bóveda</button>
+        </div>
+
+        <div id="form-register" class="auth-form">
+            <div class="row-2">
+                <div><label class="label">Nombre</label><input type="text" id="reg-name" placeholder="Anna"></div>
+                <div><label class="label">Apellidos</label><input type="text" id="reg-surname" placeholder="Bayón"></div>
+            </div>
+            
+            <label class="label">Correo electrónico</label>
+            <input type="email" id="reg-email" placeholder="tu@email.com">
+            
+            <label class="label">Teléfono (Opcional)</label>
+            <input type="tel" id="reg-phone" placeholder="+34 600 000 000">
+
+            <label class="label">¿Cuál es tu perfil fiscal?</label>
+            <select id="reg-profile">
+                <option value="residente_py">Residente en Paraguay</option>
+                <option value="nomada">Nómada Digital</option>
+                <option value="expatriado">Expatriado / Desplazado</option>
+                <option value="otro">Otro</option>
+            </select>
+
+            <label class="label">Contraseña de Bóveda (Mín. 8 caract.)</label>
+            <input type="password" id="reg-pass" placeholder="••••••••">
+            
+            <div style="background: rgba(16, 185, 129, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                <p style="font-size: 10px; color: var(--safe); line-height: 1.4;">
+                    🔒 <strong>Privacidad y RGPD:</strong> Tus datos de registro se usan exclusivamente para encriptar tu bóveda, crear las cabeceras de tus PDFs legales y permitirnos contactarte si nos envías sugerencias de mejora. No compartimos tu perfil con terceros.
+                </p>
+            </div>
+
+            <button class="btn" onclick="register()">Crear Cuenta y Entrar</button>
+        </div>
+        
+        <div id="auth-error" class="auth-error"></div>
+    </div>
+</div>
+
+<div id="app-layout">
+    <aside>
+        <div class="logo">ABO <span>Fiscal</span></div>
+        <nav class="nav-menu">
+            <button class="nav-btn active" onclick="nav('dash')"><span style="font-size:18px">📊</span> Resumen</button>
+            <button class="nav-btn" onclick="nav('cal')"><span style="font-size:18px">📅</span> Calendario</button>
+            <button class="nav-btn" onclick="nav('feedback')"><span style="font-size:18px">💡</span> Sugerencias</button>
+        </nav>
+        <button class="btn-outline" style="font-size:12px; padding:10px; border-radius:10px;" onclick="logout()">Cerrar Sesión</button>
+    </aside>
+
+    <main>
+        <div id="sect-dash" class="section active">
+            <h1 style="margin-bottom: 25px;">Hola, <span id="dash-username" style="color:var(--accent);">Usuario</span> 👋</h1>
+            <div class="grid-stats">
+                <div class="card" style="border-top: 3px solid var(--safe);"><div class="label">Días Fuera Acreditados</div><div class="val" id="st-intl">0</div></div>
+                <div class="card" style="border-top: 3px solid var(--risk);"><div class="label">Presencia España</div><div class="val" id="st-es">0</div></div>
+            </div>
+        </div>
+
+        <div id="sect-cal" class="section">
+            <h1 style="margin-bottom:20px;">Calendario Fiscal 2026</h1>
+            <div class="months-grid" id="cal-render"></div>
+        </div>
+
+        <div id="sect-feedback" class="section">
+            <h1>Buzón Directo</h1>
+            <div class="card" style="margin-top:20px;">
+                <p style="color:var(--text-dim); font-size:14px; margin-bottom:20px;">
+                    Escribe aquí tus ideas o dudas. Al tener cuenta, la administración de ABO Fiscal podrá asociar tu sugerencia a tu perfil para responderte directamente a tu correo.
+                </p>
+                <textarea id="feedback-text" rows="5" placeholder="Me encantaría que la aplicación..."></textarea>
+                <button class="btn" onclick="sendFeedback()">ENVIAR SUGERENCIA A ADMINISTRACIÓN</button>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    // --- 1. CONFIGURACIÓN APPWRITE (TU ID AQUI) ---
+    const { Client, Account, ID } = Appwrite;
+    const client = new Client().setEndpoint('https://cloud.appwrite.io/v1').setProject('69f8cfe400124a170d43');
+    const account = new Account(client);
+
+    let currentUser = null;
+
+    // --- 2. LÓGICA DE UI DE LOGIN/REGISTRO ---
+    function switchAuthTab(tab) {
+        document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+        document.getElementById('auth-error').style.display = 'none';
+        
+        if(tab === 'login') {
+            document.querySelectorAll('.auth-tab')[0].classList.add('active');
+            document.getElementById('form-login').classList.add('active');
+        } else {
+            document.querySelectorAll('.auth-tab')[1].classList.add('active');
+            document.getElementById('form-register').classList.add('active');
+        }
+    }
+
+    function showError(msg) {
+        const errDiv = document.getElementById('auth-error');
+        errDiv.innerText = msg;
+        errDiv.style.display = 'block';
+    }
+
+    // --- 3. AUTENTICACIÓN APPWRITE CON ONBOARDING ---
+    async function checkSession() {
+        try {
+            const user = await account.get();
+            currentUser = user;
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('app-layout').style.display = 'flex';
+            document.getElementById('dash-username').innerText = user.name || user.email.split('@')[0];
+            
+            // Renderizamos un calendario falso visual solo para el ejemplo
+            renderCalFake(); 
+        } catch (err) {
+            document.getElementById('auth-screen').style.display = 'flex';
+            document.getElementById('app-layout').style.display = 'none';
+        }
+    }
+
+    async function register() {
+        const name = document.getElementById('reg-name').value.trim();
+        const surname = document.getElementById('reg-surname').value.trim();
+        const email = document.getElementById('reg-email').value.trim();
+        const pass = document.getElementById('reg-pass').value;
+        const phone = document.getElementById('reg-phone').value;
+        const profile = document.getElementById('reg-profile').value;
+
+        if(!name || !email || pass.length < 8) return showError("Rellena nombre, email y una contraseña de 8+ caracteres.");
+
+        const fullName = `${name} ${surname}`;
+
+        try {
+            // 1. Crear el usuario en Appwrite con su Nombre Real
+            await account.create(ID.unique(), email, pass, fullName);
+            
+            // 2. Iniciar la sesión
+            await account.createEmailPasswordSession(email, pass);
+            
+            // 3. Guardar los metadatos extras (Teléfono y Uso) en Preferencias
+            await account.updatePrefs({ 
+                telefono: phone, 
+                perfilFiscal: profile,
+                fechaRegistro: new Date().toISOString()
+            });
+
+            document.getElementById('auth-error').style.display = 'none';
+            checkSession();
+        } 
+        catch (err) { showError(err.message); }
+    }
+
+    async function login() {
+        const e = document.getElementById('login-email').value, p = document.getElementById('login-pass').value;
+        try { 
+            await account.createEmailPasswordSession(e, p); 
+            document.getElementById('auth-error').style.display = 'none'; 
+            checkSession(); 
+        } 
+        catch (err) { showError("Correo o contraseña incorrectos."); }
+    }
+
+    async function logout() { await account.deleteSession('current'); checkSession(); }
+
+    window.onload = () => { checkSession(); };
+
+    // --- 4. SUGERENCIAS VINCULADAS AL USUARIO ---
+    function sendFeedback() {
+        const text = document.getElementById('feedback-text').value;
+        if(!text) return alert("Escribe una sugerencia.");
+        
+        // Ahora sí incluimos los datos reales del usuario porque el texto legal lo avala
+        const emailAdmin = "anna@tudominio.com"; // CAMBIAR POR TU CORREO
+        const subject = encodeURIComponent(`Sugerencia de ${currentUser.name}`);
+        const body = encodeURIComponent(`Usuario: ${currentUser.name}\nEmail: ${currentUser.email}\nAppwrite ID: ${currentUser.$id}\n\nMensaje:\n${text}`);
+        
+        window.location.href = `mailto:${emailAdmin}?subject=${subject}&body=${body}`;
+        document.getElementById('feedback-text').value = '';
+    }
+
+    // --- UTILIDADES BÁSICAS ---
+    function nav(id) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('sect-' + id).classList.add('active');
+        document.querySelector(`button[onclick="nav('${id}')"]`).classList.add('active');
+    }
+
+    function renderCalFake() {
+        const container = document.getElementById('cal-render');
+        container.innerHTML = '';
+        const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+        months.forEach((name, m) => {
+            let html = `<div class="month-card"><div class="label" style="font-size:14px; margin-bottom:10px;">${name}</div><div class="days-header"><span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span></div><div class="days-grid">`;
+            const first = new Date(2026, m, 1).getDay(); const offset = first === 0 ? 6 : first - 1;
+            for(let i=0; i<offset; i++) html += `<div class="day"></div>`;
+            for(let d=1; d<=new Date(2026, m + 1, 0).getDate(); d++) { html += `<div class="day">${d}</div>`; }
+            container.innerHTML += html + `</div></div>`;
+        });
+    }
+</script>
+</body>
+</html>
