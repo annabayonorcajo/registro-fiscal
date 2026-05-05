@@ -5,72 +5,83 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="manifest" href="manifest.json">
     <title>BRIGHT Fiscal | Evidence Vault by Brightlane</title>
-    
     <script src="https://cdn.jsdelivr.net/npm/appwrite@14.0.1"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
+<header id="landing-nav">
+    <div class="nav-container">
+        <div class="logo">BRIGHT <span>Fiscal</span></div>
+        <nav>
+            <a href="#casos-uso">Casos de Uso</a>
+            <a href="#metodologia">BrightProof™</a>
+            <a href="#precios">Plan Pro</a>
+            <button class="btn-nav" onclick="window.scrollTo(0,0)">Acceder</button>
+        </nav>
+    </div>
+</header>
+
 <datalist id="country-list">
-    <option value="España"><option value="Tailandia"><option value="Andorra"><option value="Paraguay"><option value="Tránsito Internacional">
+    <option value="España"><option value="Tailandia"><option value="Andorra"><option value="Paraguay">
 </datalist>
 
 <div id="auth-screen">
-    <div class="landing-container">
-        <div class="landing-copy">
-            <div class="logo" style="color:var(--accent); font-size:32px; margin-bottom:20px;">BRIGHT <span>Fiscal</span></div>
-            <h1>Protege tu <br><span>residencia fiscal.</span></h1>
-            <p>La bóveda criptográfica que certifica tu presencia internacional by Brightlane. Registro pericial SHA-256 inmutable frente a inspecciones de Hacienda (Art. 9.1 LIRPF).</p>
-            <div class="trust-badges">
-                <div class="trust-item"><span class="stars">★★★★★</span><span>4.9/5 en TrustPilot</span></div>
-                <div class="trust-item" style="margin-top: 10px;"><span style="font-size: 1.2rem;">🔒</span><span style="color: var(--text-dim); font-size: 0.85rem;">Seguridad Local-First & Cifrado Legal</span></div>
-            </div>
-        </div>
-
-        <div class="auth-card">
-            <h2 style="margin-bottom: 20px;">Acceso a Bóveda</h2>
-            <div class="auth-tabs"><div class="auth-tab active" onclick="switchAuthTab('login')">Entrar</div><div class="auth-tab" onclick="switchAuthTab('register')">Registro</div></div>
-            
-            <div id="form-login" class="auth-form active">
-                <input type="email" id="login-email" placeholder="Email">
-                <div class="pass-wrapper"><input type="password" id="login-pass" placeholder="Contraseña"><button class="eye-btn" onclick="togglePass('login-pass')">👁️</button></div>
-                <button class="btn" onclick="login()">Entrar Segura</button>
+    <section class="hero-section">
+        <div class="landing-container">
+            <div class="landing-copy">
+                <h1>Certifica tu vida <br><span>fuera de España.</span></h1>
+                <p>Genera <strong>BrightProof™</strong>: Sellos periciales inmutables de grado gubernamental para blindar tu residencia fiscal internacional.</p>
+                <div class="trust-badges">
+                    <div class="trust-item"><span class="stars">★★★★★</span><span>Líder en Auditoría Fiscal Digital</span></div>
+                </div>
             </div>
 
-            <div id="form-register" class="auth-form">
-                <div class="progress-bar"><div class="progress-dot active" id="dot1"></div><div class="progress-dot" id="dot2"></div><div class="progress-dot" id="dot3"></div></div>
-                <div id="step1" class="reg-step active">
-                    <label class="label">Seguridad <span class="req-mark">*</span></label>
-                    <input type="email" id="reg-email" placeholder="Email">
-                    <div class="pass-wrapper"><input type="password" id="reg-pass" placeholder="Contraseña (Mín 8)"><button class="eye-btn" onclick="togglePass('reg-pass')">👁️</button></div>
-                    <button class="btn" onclick="nextStep(2)">Siguiente</button>
+            <div class="auth-card">
+                <div class="auth-tabs"><div class="auth-tab active" onclick="switchAuthTab('login')">Entrar</div><div class="auth-tab" onclick="switchAuthTab('register')">Registro</div></div>
+                <div id="form-login" class="auth-form active">
+                    <input type="email" id="login-email" placeholder="Email">
+                    <div class="pass-wrapper"><input type="password" id="login-pass" placeholder="Contraseña"><button class="eye-btn" onclick="togglePass('login-pass')">👁️</button></div>
+                    <button class="btn" onclick="login()">Acceder a mi Bóveda</button>
                 </div>
-                <div id="step2" class="reg-step">
-                    <label class="label">Identidad Real <span class="req-mark">*</span></label>
-                    <input type="text" id="reg-name" placeholder="Nombre">
-                    <input type="text" id="reg-surname" placeholder="Apellidos">
-                    <button class="btn" onclick="nextStep(3)">Siguiente</button>
-                </div>
-                <div id="step3" class="reg-step">
-                    <label class="label">Situación Fiscal (Objetivo) <span class="req-mark">*</span></label>
-                    <select id="reg-profile">
-                        <option value="tailandia">Expatriado Tailandia / Asia</option>
-                        <option value="nomada">Nómada Digital</option>
-                        <option value="beckham">Ley Beckham (España)</option>
-                        <option value="otro">Otro (Emiratos, Andorra...)</option>
-                    </select>
-                    <div style="background: rgba(16, 185, 129, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 15px; display: flex; align-items: start; gap: 10px;">
-                        <input type="checkbox" id="reg-terms" style="width:18px; height:18px; margin-top:2px; accent-color:var(--safe)"> 
-                        <p style="font-size:11px; color:var(--safe); line-height:1.4; margin:0;"><strong>Acepto Privacidad y RGPD <span class="req-mark">*</span></strong><br>Entiendo que mis datos se usan para encriptar la bóveda y validar legalmente mis reportes periciales.</p>
+                <div id="form-register" class="auth-form">
+                    <div class="progress-bar"><div class="progress-dot active" id="dot1"></div><div class="progress-dot" id="dot2"></div><div class="progress-dot" id="dot3"></div></div>
+                    <div id="step1" class="reg-step active">
+                        <input type="email" id="reg-email" placeholder="Email"><div class="pass-wrapper"><input type="password" id="reg-pass" placeholder="Contraseña"><button class="eye-btn" onclick="togglePass('reg-pass')">👁️</button></div>
+                        <button class="btn" onclick="nextStep(2)">Siguiente</button>
                     </div>
-                    <div class="row-2"><button class="btn btn-outline" onclick="nextStep(2)">Atrás</button><button class="btn" onclick="register()">Finalizar Registro</button></div>
+                    <div id="step2" class="reg-step">
+                        <input type="text" id="reg-name" placeholder="Nombre"><input type="text" id="reg-surname" placeholder="Apellidos">
+                        <button class="btn" onclick="nextStep(3)">Siguiente</button>
+                    </div>
+                    <div id="step3" class="reg-step">
+                        <select id="reg-profile"><option value="tailandia">Expatriado Tailandia</option><option value="nomada">Nómada Digital</option><option value="beckham">Ley Beckham</option></select>
+                        <button class="btn" onclick="register()">Completar</button>
+                    </div>
                 </div>
+                <div id="auth-error" class="auth-error"></div>
             </div>
-            <div id="auth-error" class="auth-error"></div>
         </div>
-    </div>
+    </section>
+
+    <section id="casos-uso" class="landing-details">
+        <h2>Diseñado para el Exiliado Fiscal</h2>
+        <div class="features-grid">
+            <div class="feat-card"><h4>Nómadas Digitales</h4><p>Demuestra que tus 183 días ocurren en jurisdicciones de baja tributación.</p></div>
+            <div class="feat-card"><h4>Ley Beckham</h4><p>Control estricto de tus desplazamientos para evitar la pérdida del régimen.</p></div>
+            <div class="feat-card"><h4>Expatriados</h4><p>Blindaje total frente al Art. 9.1 de la LIRPF (Intereses económicos).</p></div>
+        </div>
+    </section>
+
+    <section id="metodologia" class="landing-details dark">
+        <h2>La Metodología BrightProof™</h2>
+        <div class="method-box">
+            <div class="method-step"><span>1</span><strong>Geolocalización GPS</strong><p>Coordenadas verificadas por satélite.</p></div>
+            <div class="method-step"><span>2</span><strong>Sello de Tiempo</strong><p>Marca temporal inalterable.</p></div>
+            <div class="method-step"><span>3</span><strong>Hash SHA-256</strong><p>Firma digital que detecta cualquier edición posterior.</p></div>
+        </div>
+    </section>
 </div>
 
 <div id="app-layout">
@@ -78,250 +89,139 @@
         <div class="logo">BRIGHT <span>Fiscal</span></div>
         <nav class="nav-menu">
             <button class="nav-btn active" onclick="nav('dash')">📊 Resumen</button>
-            <button class="nav-btn" onclick="nav('cal')">📅 Calendario</button>
-            <button class="nav-btn" onclick="nav('hash')">🔐 Auditoría</button>
+            <button class="nav-btn" onclick="nav('cal')">📅 Registro</button>
+            <button class="nav-btn" onclick="nav('hash')">🔐 BrightProofs™</button>
             <button class="nav-btn" onclick="nav('paper')">📁 Paper Trail</button>
-            <button class="nav-btn" onclick="nav('cloud')">☁️ Cloud Sync <span class="pro-badge">PRO</span></button>
+            <button class="nav-btn" onclick="nav('cloud')">☁️ Cloud <span class="pro-badge">PRO</span></button>
             <button class="nav-btn" onclick="nav('profile')">⚙️ Ajustes</button>
-            <button class="nav-btn" onclick="nav('faqs')">❓ FAQs</button>
-            <button class="nav-btn" onclick="nav('feedback')">💡 Feedback</button>
+            <button class="nav-btn" onclick="nav('faqs')">❓ Ayuda</button>
+            <button class="nav-btn" onclick="nav('feedback')">💡 Sugerencias</button>
         </nav>
-        <button class="btn-outline" style="font-size:12px; padding:12px; border-radius:12px; margin-top:10px;" onclick="logout()">Cerrar Sesión</button>
+        <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
     </aside>
 
     <main>
         <div id="sect-dash" class="section active">
-            <h1 id="dash-username" style="margin-bottom: 25px;">Hola 👋</h1>
+            <h1 id="dash-username">Hola 👋</h1>
             <div class="semaforo-container">
-                <div class="semaforo-header">
-                    <div>
-                        <h3>Riesgo de Residencia (España)</h3>
-                        <p style="font-size:12px; color:var(--text-dim); margin-top:5px;" id="semaforo-text">Calculando...</p>
-                    </div>
-                    <div class="count" id="semaforo-count">0 <span style="font-size:14px; font-weight:normal; color:var(--text-dim)">/ 183 DÍAS</span></div>
-                </div>
+                <div class="semaforo-header"><h3>Semaforo de Riesgo España</h3><span id="semaforo-count" class="count">0/183</span></div>
                 <div class="semaforo-track"><div class="semaforo-fill" id="semaforo-bar"></div></div>
-                <div class="semaforo-marks"><span>0</span><span>90</span><span>160</span><span style="color:var(--risk)">183 LÍMITE</span></div>
                 <div class="completeness-legend">
-                    <span id="leg-img">📸 Fotos: 0</span> <span id="leg-pdf">📄 PDFs: 0</span>
-                    <span id="leg-gps">📍 GPS: 0</span> <span id="leg-notes">📝 Notas: 0</span>
+                    <span id="leg-img">📸: 0</span> · <span id="leg-pdf">📄: 0</span> · <span id="leg-gps">📍: 0</span>
                 </div>
             </div>
             <div class="grid-stats">
-                <div class="card" style="border-top:3px solid var(--safe);"><div class="label">Fuera (Acreditados)</div><div class="val" id="st-intl">0</div></div>
-                <div class="card" style="border-top:3px solid var(--risk);"><div class="label">España (Presencia)</div><div class="val" id="st-es">0</div></div>
+                <div class="card" style="border-top:3px solid var(--safe);"><div class="label">Fuera</div><div class="val" id="st-intl">0</div></div>
+                <div class="card" style="border-top:3px solid var(--risk);"><div class="label">España</div><div class="val" id="st-es">0</div></div>
             </div>
         </div>
 
         <div id="sect-cal" class="section">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
-                <h1 style="margin:0;">Registro Fiscal</h1>
-                <button class="btn btn-outline" style="margin:0; width:auto; padding:10px 15px; font-size:13px; border-color:var(--accent); color:var(--accent);" onclick="openBulkModal()">📅 + Registro Múltiple</button>
-            </div>
             <div class="cal-header-nav">
                 <button onclick="changeMonth(-1)">◀</button>
                 <h2 id="cal-month-title">Mes Año</h2>
                 <button onclick="changeMonth(1)">▶</button>
             </div>
             <div class="month-card" id="cal-render"></div>
-        </div>
-
-        <div id="sect-paper" class="section">
-            <h1 style="margin-bottom:10px;">Paper Trail: Blindaje 9.1.b</h1>
-            <p style="color:var(--text-dim); font-size:14px; margin-bottom:25px; line-height:1.6;">Genera evidencias documentales de que tu vida real (y económica) ocurre fuera de España para neutralizar el criterio de "Núcleo de intereses económicos".</p>
-            <div class="grid-stats">
-                <div class="card" style="border-top: 3px solid var(--safe);">
-                    <h4 style="margin-bottom:15px; color:var(--safe);">Checklist Mudanza</h4>
-                    <div style="font-size:13px; color:var(--text); line-height:2;">
-                        <label style="display:flex; gap:10px; align-items:center;"><input type="checkbox" style="width:16px; margin:0;"> Visado local (DTV/Residencia)</label>
-                        <label style="display:flex; gap:10px; align-items:center;"><input type="checkbox" style="width:16px; margin:0;"> Contrato de alquiler extranjero</label>
-                        <label style="display:flex; gap:10px; align-items:center;"><input type="checkbox" style="width:16px; margin:0;"> Cuenta bancaria local</label>
-                        <label style="display:flex; gap:10px; align-items:center;"><input type="checkbox" style="width:16px; margin:0;"> Facturas suministros</label>
-                    </div>
-                </div>
-                <div class="card" style="border-top: 3px solid var(--risk);">
-                    <h4 style="margin-bottom:15px; color:var(--risk);">Intereses en España</h4>
-                    <p style="font-size:13px; font-weight:bold;">⚠️ Precaución: SL Operativa detectada.</p>
-                    <p style="font-size:13px; color:var(--text-dim); margin-top:10px; line-height:1.6;">Añade la nota <span style="color:var(--accent)">"Gestión Remota"</span> en tu calendario cada vez que trabajes para tu SL desde el extranjero para demostrar desvinculación física.</p>
-                </div>
-            </div>
+            <button class="btn btn-outline" style="margin-top:20px" onclick="openBulkModal()">📅 + Registro Múltiple (Viajes)</button>
         </div>
 
         <div id="sect-hash" class="section">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
-                <h1>Auditoría Criptográfica</h1>
-                <div style="display:flex; gap:10px;">
-                    <button class="btn btn-outline" style="width:auto; padding:12px 20px; font-size:13px; margin:0;" onclick="exportCSV()">📄 CSV <span class="pro-badge" style="position:static; margin-left:5px;">PRO</span></button>
-                    <button class="btn" style="width:auto; padding:12px 20px; font-size:13px; margin:0;" onclick="exportPDF()">🛡️ Generar Pericial PDF</button>
-                </div>
+                <h1>Centro de BrightProofs™</h1>
+                <button class="btn" style="width:auto; padding:10px 15px; font-size:12px" onclick="exportPDF()">Exportar Pericial</button>
+            </div>
+            <div class="filter-bar">
+                <input type="text" id="filter-country" placeholder="Filtrar por país..." oninput="updateAll()">
+                <select id="filter-type" onchange="updateAll()">
+                    <option value="all">Todas las evidencias</option>
+                    <option value="doc">Con Documento/PDF</option>
+                    <option value="gps">Con GPS</option>
+                </select>
             </div>
             <div class="audit-table-wrapper">
                 <table class="audit-table">
-                    <thead><tr><th>Fecha Formal</th><th>Sello (Hora)</th><th>País</th><th>Evidencias</th><th>Hash SHA-256</th></tr></thead>
+                    <thead><tr><th>Fecha</th><th>País / Actividad</th><th>Evidencias</th><th>Acción</th></tr></thead>
                     <tbody id="audit-body"></tbody>
                 </table>
             </div>
         </div>
 
-        <div id="sect-cloud" class="section">
-            <h1>Sincronización Cloud ☁️</h1>
-            <div class="card" style="margin-top:20px; text-align:center; padding: 50px 20px;">
-                <span style="font-size: 50px;">🌐</span>
-                <h3 style="margin: 20px 0;">Sincronización Automática</h3>
-                <p style="color:var(--text-dim); font-size:15px; max-width:550px; margin:0 auto 30px auto; line-height:1.6;">El Plan PRO sincroniza todos tus PDFs, Fotos y Hashes con nuestros servidores seguros. Si cambias de dispositivo, no perderás ni una prueba.</p>
-                <button class="btn btn-gold" style="width: auto; padding: 15px 35px;" onclick="checkProFeature('cloud', null)">Sincronizar Bóveda Ahora</button>
+        <div id="sect-paper" class="section">
+            <h1>Paper Trail: Blindaje 9.1.b</h1>
+            <div id="paper-wizard" class="card" style="background:rgba(0,242,234,0.05); border:1px dashed var(--accent);">
+                <h4>Análisis de Situación Pericial</h4>
+                <p style="font-size:13px; margin:10px 0;">Responde 3 preguntas para recibir tu checklist personalizada.</p>
+                <div id="wizard-step">
+                    <p id="q-text">¿Mantienes vivienda a tu disposición en España?</p>
+                    <div style="display:flex; gap:10px; margin-top:15px;">
+                        <button class="btn btn-outline" style="font-size:12px" onclick="wizardNext(true)">Sí</button>
+                        <button class="btn btn-outline" style="font-size:12px" onclick="wizardNext(false)">No</button>
+                    </div>
+                </div>
+            </div>
+            <div id="paper-results" class="grid-stats" style="display:none;">
+                <div class="card">
+                    <h4>Checklist de Blindaje</h4>
+                    <ul id="checklist-items" style="font-size:13px; color:var(--text-dim); padding-left:15px; margin-top:10px;"></ul>
+                </div>
+                <div class="card">
+                    <h4>Bóveda de Documentos <span class="pro-badge" style="position:static;">PRO</span></h4>
+                    <p style="font-size:12px; color:var(--text-dim)">Sube aquí tus contratos de alquiler y visados para compartir con tu asesor.</p>
+                    <button class="btn btn-gold" style="font-size:12px; margin-top:15px;" onclick="checkProFeature('cloud', null)">Sellar Documento Maestro</button>
+                </div>
             </div>
         </div>
 
         <div id="sect-profile" class="section">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h1>Ajustes</h1>
-                <div id="pro-status-badge" style="background:var(--border); padding:8px 15px; border-radius:20px; font-size:12px; font-weight:bold;">Plan Básico</div>
-            </div>
-            
+            <h1>Ajustes</h1>
             <div class="card">
-                <label class="label">DNI / NIF / RUC (Obligatorio para PDF) <span class="req-mark">*</span></label>
-                <input type="text" id="p-id" onchange="saveProfileConfig()" placeholder="Ej. 12345678Z">
+                <label class="label">DNI / NIF (Requerido para PDF)</label><input type="text" id="p-id" onchange="saveProfileConfig()">
                 <div class="row-2">
-                    <div>
-                        <label class="label">Tema Visual</label>
-                        <select id="theme-sel" onchange="saveProfileConfig()"><option value="default">Oscuro Premium</option><option value="light">Modo Claro</option></select>
-                    </div>
-                    <div>
-                        <label class="label">Color de Acento Neón</label>
+                    <div><label class="label">Tema</label><select id="theme-sel" onchange="saveProfileConfig()"><option value="default">Oscuro</option><option value="light">Claro</option></select></div>
+                    <div><label class="label">Acento Neón</label>
                         <div class="color-selector">
                             <div class="color-dot active" style="background:#00f2ea" onclick="setAccent('#00f2ea', this)"></div>
                             <div class="color-dot" style="background:#ec4899" onclick="setAccent('#ec4899', this)"></div>
                             <div class="color-dot" style="background:#f59e0b" onclick="setAccent('#f59e0b', this)"></div>
-                            <div class="color-dot" style="background:#a855f7" onclick="setAccent('#a855f7', this)"></div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <div class="card" style="border: 1px solid var(--accent);">
-                <h3 style="margin-bottom:10px;">Enlace para tu Asesor / Gestor</h3>
-                <p style="font-size:13px; color:var(--text-dim); margin-bottom:15px;">Genera un enlace cifrado de solo lectura para tu asesor.</p>
-                <button class="btn btn-outline" id="btn-gestor" onclick="copyGestorLink()">🔗 Copiar Enlace Seguro</button>
-            </div>
-            <button class="btn btn-gold" style="margin-top:10px" onclick="toggleProMode()">🛠️ [Admin]: Simular Pago Plan PRO</button>
-        </div>
-
-        <div id="sect-faqs" class="section">
-            <h1 style="margin-bottom:20px;">Preguntas Frecuentes</h1>
-            <details>
-                <summary>¿Qué validez tiene el Hash SHA-256?</summary>
-                <p>Es el mismo algoritmo utilizado en firmas digitales gubernamentales. Al sellar tu entrada, generamos una huella digital única (Hash) que agrupa tu GPS, hora y archivo. Esto demuestra matemáticamente que la evidencia no ha sido creada ni alterada a posteriori.</p>
-            </details>
-            <details>
-                <summary>¿Por qué me pide acceso a la ubicación?</summary>
-                <p>Para que la prueba pericial sea robusta. Un billete de avión demuestra intención, pero unas coordenadas GPS exactas certifican tu presencia física irrefutable en un país en ese momento exacto.</p>
-            </details>
-            <details>
-                <summary>He cambiado de móvil y no veo mis fotos.</summary>
-                <p>En el <b>Plan Básico</b>, los archivos se guardan en la memoria local de tu dispositivo por cuestiones de privacidad. Si borras la caché o cambias de móvil, los perderás. Si quieres que estén seguros en la nube, necesitas hacer upgrade al <b>Plan PRO</b>.</p>
-            </details>
-        </div>
-
-        <div id="sect-feedback" class="section">
-            <h1>Feedback Directo</h1>
-            <div class="card" style="margin-top:20px;">
-                <p style="color:var(--text-dim); font-size:14px; margin-bottom:20px;">¿Echas en falta alguna funcionalidad o país? Escríbenos para mejorar la app.</p>
-                <textarea id="feedback-text" rows="5" placeholder="Me encantaría que la aplicación..."></textarea>
-                <button class="btn" onclick="sendFeedback()">ENVIAR SUGERENCIA</button>
-            </div>
+            <button class="btn btn-outline" id="btn-gestor" onclick="copyGestorLink()">🔗 Copiar Enlace para mi Gestor</button>
         </div>
     </main>
 </div>
 
 <div id="catchup-modal" class="modal-overlay">
-    <div class="modal-box" style="text-align: center;">
-        <h2 style="color: var(--accent); margin-bottom: 15px;">¿Dónde has estado este año?</h2>
-        <p style="color:var(--text-dim); font-size:14px; margin-bottom:25px; line-height:1.6;">Para ahorrarte rellenar día a día, dinos dónde has estado desde el 1 de Enero hasta ayer:</p>
-        <button class="btn btn-outline" style="margin-bottom:12px; justify-content:flex-start;" onclick="catchupFill('es')">🇪🇸 En España todo el tiempo</button>
-        <button class="btn btn-outline" style="margin-bottom:12px; justify-content:flex-start;" onclick="catchupFill('intl')">🌎 Fuera (Tailandia, Latam...)</button>
-        <button class="btn" style="background:var(--card); color:var(--text); border:1px solid var(--border);" onclick="closeModal('catchup-modal')">🗓️ Ha sido mixto, lo haré a mano</button>
+    <div class="modal-box" style="text-align:center;">
+        <h2 style="color:var(--accent); margin-bottom:15px">¿Dónde has estado este año?</h2>
+        <button class="btn btn-outline" style="margin-bottom:10px" onclick="catchupFill('es')">🇪🇸 En España todo el tiempo</button>
+        <button class="btn btn-outline" onclick="catchupFill('intl')">🌎 Fuera todo el tiempo</button>
     </div>
 </div>
 
 <div id="modal-single" class="modal-overlay">
     <div class="modal-box">
-        <h2 id="m-date-natural" style="color:var(--accent); font-size:22px; margin-bottom:15px; text-transform:capitalize;">Fecha</h2>
-        <button id="btn-gps" class="gps-btn" onclick="requestLocation()">📍 Sellar Ubicación GPS</button>
+        <h2 id="m-date-natural" style="color:var(--accent); margin-bottom:15px;">Fecha</h2>
+        <button id="btn-gps" class="gps-btn" onclick="requestLocation()">📍 Sellar Ubicación BrightProof™</button>
         <input type="hidden" id="f-gps-val">
-
         <div class="row-2">
-            <div><label class="label">Estado <span class="req-mark">*</span></label><select id="f-loc"><option value="intl">✅ Fuera</option><option value="es">❌ España</option></select></div>
-            <div><label class="label">País Exacto <span class="req-mark">*</span></label><input type="text" id="f-country" list="country-list" placeholder="Ej. Tailandia"></div>
+            <div><label class="label">Estado</label><select id="f-loc"><option value="intl">✅ Fuera</option><option value="es">❌ España</option></select></div>
+            <div><label class="label">País / Actividad</label><input type="text" id="f-country" list="country-list"></div>
         </div>
-        
-        <div class="row-2" style="align-items: end;">
-            <div><label class="label">Doc / Foto <span class="pro-badge" style="position:static;">PRO</span></label>
-                <input type="file" id="f-file-single" accept="image/*,application/pdf" style="display:none" onchange="processFile(this, 'preview-single')">
-                <button class="btn btn-outline" style="padding:14px; font-size:12px; border-style:dashed; margin:0;" onclick="checkProFeature('photo', 'f-file-single')">📎 Subir Archivo</button>
-            </div>
-            <div><label class="label">Vuelo/Ref</label><input type="text" id="f-flight" placeholder="Ej. IB6833" style="margin:0;"></div>
+        <div class="row-2" style="align-items:end">
+            <div><label class="label">Adjunto (PDF/Foto)</label><input type="file" id="f-file" onchange="processFile(this, 'p-single')"><button class="btn btn-outline" style="font-size:12px; padding:12px" onclick="document.getElementById('f-file').click()">📎 Subir</button></div>
+            <div><input type="text" id="f-flight" placeholder="Vuelo/Ref" style="margin:0"></div>
         </div>
-        <img id="preview-single" class="photo-preview" src="" style="margin-top: 15px;">
-        
-        <label class="label" style="margin-top:15px;">Notas (Blindaje 9.1.b) <span class="opt-mark">(Opcional)</span></label>
-        <textarea id="f-notes" rows="2" placeholder="Ej: Gestión remota de SL española..."></textarea>
-        
-        <button class="btn" onclick="saveDay()">SELLAR EVIDENCIA (SHA-256)</button>
-        <button id="btn-delete-single" class="btn btn-danger" style="margin-top:12px; display:none;" onclick="deleteDay()">🗑️ Anular Registro</button>
-        <button class="btn btn-outline" style="margin-top:12px; border:none; color:var(--text-dim);" onclick="closeModal('modal-single')">Cancelar</button>
-    </div>
-</div>
-
-<div id="modal-bulk" class="modal-overlay">
-    <div class="modal-box">
-        <h2 style="color:var(--accent); font-size:22px; margin-bottom:10px;">Registro Múltiple</h2>
-        <p style="font-size:13px; color:var(--text-dim); margin-bottom:20px; line-height:1.5;">Registra un rango de fechas de golpe (Ej. Viajes) creando un Hash para cada día amparado bajo la misma evidencia (billete/hotel).</p>
-        
-        <div class="row-2">
-            <div><label class="label">Fecha Inicio <span class="req-mark">*</span></label><input type="date" id="b-start"></div>
-            <div><label class="label">Fecha Fin <span class="req-mark">*</span></label><input type="date" id="b-end"></div>
-        </div>
-
-        <div class="row-2">
-            <div><label class="label">Estado <span class="req-mark">*</span></label><select id="b-loc"><option value="intl">✅ Fuera</option><option value="es">❌ España</option></select></div>
-            <div><label class="label">País Exacto <span class="req-mark">*</span></label><input type="text" id="b-country" list="country-list" placeholder="Ej. España"></div>
-        </div>
-        
-        <div style="background: rgba(0, 242, 234, 0.05); padding: 18px; border-radius: 12px; border: 1px dashed var(--accent); margin-bottom: 20px;">
-            <p style="font-size: 11px; color: var(--accent); margin-bottom: 12px; line-height:1.5;"><strong>Evidencia Paraguas:</strong> Adjunta el billete de ida y vuelta (PDF/Foto) o factura de hotel para justificar todo este rango.</p>
-            <div class="row-2" style="align-items: end;">
-                <div><label class="label">Doc / Foto <span class="pro-badge" style="position:static;">PRO</span></label>
-                    <input type="file" id="b-file-bulk" accept="image/*,application/pdf" style="display:none" onchange="processFile(this, 'preview-bulk')">
-                    <button class="btn btn-outline" style="padding:14px; font-size:12px; border-style:dashed; margin:0;" onclick="checkProFeature('photo', 'b-file-bulk')">📎 Subir Documento</button>
-                </div>
-                <div><label class="label">Vuelo/Ref</label><input type="text" id="b-flight" placeholder="Vuelos" style="margin:0;"></div>
-            </div>
-            <img id="preview-bulk" class="photo-preview" src="" style="margin-top: 15px;">
-        </div>
-        <label class="label">Motivo General <span class="opt-mark">(Opcional)</span></label><textarea id="b-notes" rows="2" placeholder="Viaje de negocios completo..."></textarea>
-        
-        <button class="btn" onclick="saveBulk()">SELLAR RANGO (SHA-256)</button>
-        <button class="btn btn-outline" style="margin-top:12px; border:none; color:var(--text-dim);" onclick="closeModal('modal-bulk')">Cancelar</button>
-    </div>
-</div>
-
-<div id="paywall-modal" class="modal-overlay">
-    <div class="modal-box">
-        <h1 style="font-size: 38px; margin-bottom: 15px;">⭐</h1>
-        <h2 style="color: var(--accent-gold); margin-bottom: 15px;">Transparencia y Plan PRO</h2>
-        <p style="color: var(--text-dim); font-size: 14px; margin-bottom:20px; line-height:1.6;">Para garantizar tu privacidad total y mantener un coste cero, el plan básico guarda tus fotos en la memoria física de tu móvil. Pero almacenar miles de PDFs encriptados en nuestros servidores (Appwrite Cloud) tiene costes de infraestructura reales.</p>
-        <div class="feature-list" style="margin: 15px 0;">
-            <p><span>✓</span> Subida de PDFs (Billetes/Facturas) a la Nube.</p>
-            <p><span>✓</span> Sincronización instantánea entre móvil y PC.</p>
-            <p><span>✓</span> Exportación masiva de datos (CSV) para gestores.</p>
-        </div>
-        <button class="btn btn-gold" style="margin-top:10px" onclick="alert('Redirigiendo a pasarela segura de Stripe...')">Apoyar el proyecto: 9,99€/mes</button>
-        <button class="btn btn-outline" style="margin-top:12px; border:none; color:var(--text-dim);" onclick="closeModal('paywall-modal')">Quizás más tarde</button>
+        <img id="p-single" class="photo-preview" src="" style="margin-top:10px">
+        <textarea id="f-notes" rows="2" placeholder="Notas periciales (Blindaje 9.1.b)..." style="margin-top:15px"></textarea>
+        <button class="btn" onclick="saveDay()">SELLAR BRIGHTPROOF™</button>
+        <button id="btn-delete" class="btn btn-danger" style="margin-top:10px; display:none" onclick="deleteDay()">Anular Registro</button>
+        <button class="btn btn-outline" style="margin-top:10px; border:none" onclick="closeModal('modal-single')">Cerrar</button>
     </div>
 </div>
 
 <script src="app.js"></script>
-
 </body>
 </html>
